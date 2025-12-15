@@ -1,29 +1,32 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jossbnd/trainwatch/backend/internal/service"
 )
 
-// GET /next-train?type=metro&line=1&station=Chatelet&direction=A
-func GetNextTrainHandler(c *gin.Context) {
-	transportType := c.Query("type")
+func (h *handler) GetNextTrainHandler(c *gin.Context) {
+	stop := c.Query("stop")
 	line := c.Query("line")
-	station := c.Query("station")
-	direction := c.Query("direction")
+	direction := ""
 
-	if transportType == "" || line == "" || station == "" || direction == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing required query params: type, line, station, direction"})
+	if line == "" || stop == "" {
+		fmt.Println("missing required query params: line, stop", line, stop)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing required query params: line, stop"})
 		return
 	}
 
-	result, err := service.GetNextTrain(transportType, line, station, direction)
+	result, err := h.service.GetNextTrains(stop, line, direction)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	if len(result) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "no upcoming trains found"})
+		return
+	}
 	c.JSON(http.StatusOK, result)
 }

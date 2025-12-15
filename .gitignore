@@ -1,0 +1,47 @@
+# General
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Environment
+.env
+.env.*
+
+# Binaries
+/bin/
+/build/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test / coverage
+*.test
+*.out
+coverage.out
+*.coverprofile
+
+# Go
+/vendor/
+Godeps/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.iml
+*.swp
+
+# Logs and temporary files
+*.log
+tmp/
+*.tmp
+
+# Node
+node_modules/
+
+# Misc
+dist/
+coverage/
