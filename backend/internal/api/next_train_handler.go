@@ -1,31 +1,33 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (h *handler) GetNextTrainHandler(c *gin.Context) {
-	stop := c.Query("stop")
-	line := c.Query("line")
-	direction := ""
+type Query struct {
+	Stop      string `form:"stop" binding:"required"`
+	Line      string `form:"line" binding:"required"`
+	Direction string `form:"direction"`
+}
 
-	if line == "" || stop == "" {
-		fmt.Println("missing required query params: line, stop", line, stop)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing required query params: line, stop"})
+func (h *handler) GetNextTrainHandler(c *gin.Context) {
+	var q Query
+	if err := c.ShouldBindQuery(&q); err != nil {
+		h.logger.Error("api: invalid query parameters", "error", err)
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	result, err := h.service.GetNextTrains(stop, line, direction)
+	result, err := h.service.GetNextTrains(q.Stop, q.Line, q.Direction)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
 	if len(result) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "no upcoming trains found"})
+		c.JSON(http.StatusNotFound, err)
 		return
 	}
 	c.JSON(http.StatusOK, result)

@@ -21,10 +21,12 @@ type StopVisit struct {
 			Value string `json:"value"`
 		} `json:"DestinationName"`
 		MonitoredCall struct {
-			ExpectedDepartureTime string `json:"ExpectedDepartureTime,omitempty"`
-			ExpectedArrivalTime   string `json:"ExpectedArrivalTime,omitempty"`
-			DepartureStatus       string `json:"DepartureStatus,omitempty"`
-			ArrivalStatus         string `json:"ArrivalStatus,omitempty"`
+			ExpectedDepartureTime *time.Time `json:"ExpectedDepartureTime,omitempty"`
+			AimedDepartureTime    *time.Time `json:"AimedDepartureTime,omitempty"`
+			ExpectedArrivalTime   *time.Time `json:"ExpectedArrivalTime,omitempty"`
+			AimedArrivalTime      *time.Time `json:"AimedArrivalTime,omitempty"`
+			DepartureStatus       string     `json:"DepartureStatus,omitempty"`
+			ArrivalStatus         string     `json:"ArrivalStatus,omitempty"`
 		} `json:"MonitoredCall"`
 	} `json:"MonitoredVehicleJourney"`
 }

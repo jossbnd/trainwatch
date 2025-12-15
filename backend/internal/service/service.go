@@ -2,10 +2,12 @@ package service
 
 import (
 	"github.com/jossbnd/trainwatch/backend/internal/api/dto"
+	"github.com/jossbnd/trainwatch/backend/internal/logger"
 	"github.com/jossbnd/trainwatch/backend/internal/prim"
 )
 
 type Input struct {
+	Logger     logger.Logger
 	PrimClient prim.Client
 }
 
@@ -16,11 +18,13 @@ type Service interface {
 }
 
 type service struct {
+	logger     logger.Logger
 	primClient prim.Client
 }
 
 func New(i Input) Service {
 	return &service{
+		logger:     i.Logger,
 		primClient: i.PrimClient,
 	}
 }

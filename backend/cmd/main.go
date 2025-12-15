@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jossbnd/trainwatch/backend/internal/api"
 	"github.com/jossbnd/trainwatch/backend/internal/config"
+	"github.com/jossbnd/trainwatch/backend/internal/logger"
 	"github.com/jossbnd/trainwatch/backend/internal/prim"
 	"github.com/jossbnd/trainwatch/backend/internal/service"
 )
@@ -15,9 +16,17 @@ func main() {
 	// Load config
 	c, err := config.Load()
 	if err != nil {
-		log.Fatal("failed to load config: ", err)
+		logger.New(logger.Input{
+			Level: "error",
+		}).Error("failed to load config", "error", err)
+		os.Exit(1)
 	}
-	log.Printf("config loaded: env=%s, gin_mode=%s, port=%s", c.Env, c.GinMode, c.Port)
+
+	// Set logger
+	logger := logger.New(logger.Input{
+		Level: c.LogLevel,
+	})
+	logger.Info(fmt.Sprintf("logger initialized with level=%s", c.LogLevel))
 
 	// Set gin mode from config
 	gin.SetMode(c.GinMode)
@@ -25,24 +34,28 @@ func main() {
 	// Initialize prim client
 	primClient, err := prim.New(c.PrimBaseURL, c.PrimAPIKey)
 	if err != nil {
-		log.Fatal("failed to initialize prim client: ", err)
+		logger.Error("failed to initialize prim client", "error", err)
+		os.Exit(1)
 	}
-	log.Printf("prim client initialized with baseURL=%s", c.PrimBaseURL)
+	logger.Info(fmt.Sprintf("prim client initialized with baseURL=%s", c.PrimBaseURL))
 
 	// Initialize service
 	svc := service.New(service.Input{
+		Logger:     logger,
 		PrimClient: primClient,
 	})
-	log.Printf("service initialized")
+	logger.Info("service initialized")
 
 	// Initialize API
 	r := api.New(api.Input{
+		Logger:  logger,
 		Service: svc,
 	})
 
 	addr := fmt.Sprintf(":%s", c.Port)
-	log.Printf("starting server on %s", addr)
+	logger.Info(fmt.Sprintf("starting server on %s", addr))
 	if err := r.Run(addr); err != nil {
-		log.Fatalf("server exited with error: %v", err)
+		logger.Error("server exited with error", "error", err)
+		os.Exit(1)
 	}
 }

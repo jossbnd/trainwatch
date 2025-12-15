@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Env         string
 	Port        string
+	LogLevel    string
 	GinMode     string
 	PrimBaseURL string
 	PrimAPIKey  string
@@ -32,8 +33,9 @@ func Load() (Config, error) {
 
 	cfg := Config{
 		Env:         getEnv("ENV", "dev"),
-		GinMode:     getEnv("GIN_MODE", "debug"),
 		Port:        getEnv("PORT", "8080"),
+		LogLevel:    getEnv("LOG_LEVEL", "info"),
+		GinMode:     getEnv("GIN_MODE", "debug"),
 		PrimBaseURL: primBase,
 		PrimAPIKey:  primKey,
 	}
