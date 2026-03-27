@@ -164,7 +164,7 @@ func TestGetNextTrains_DelayMinutes(t *testing.T) {
 	}
 }
 
-// Test 9: limit is enforced
+// Test 8: limit is enforced
 func TestGetNextTrains_LimitEnforced(t *testing.T) {
 	visits := []prim.StopVisit{
 		futureVisit(5, 0, "A", "", ""),
