@@ -28,7 +28,7 @@ type StopVisit struct {
 	DirectionRef    TextValue     `json:"DirectionRef"`
 	DirectionName   []TextValue   `json:"DirectionName"`
 	DestinationName []TextValue   `json:"DestinationName"`
-	Timing   Timing `json:"Timing"`
+	Timing   Timing `json:"MonitoredCall"`
 }
 
 // Client defines the interface for interacting with the PRIM stop-monitoring API.
