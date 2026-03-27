@@ -21,8 +21,8 @@ type handler struct {
 
 func New(input Input) *gin.Engine {
 	r := gin.New()
-	r.Use(gin.Recovery())
 	r.Use(requestLogger(input.Logger))
+	r.Use(gin.Recovery())
 
 	h := &handler{
 		log:     input.Logger,
