@@ -8,12 +8,30 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"github.com/jossbnd/trainwatch/backend/internal/model"
 )
 
+type TextValue struct {
+	Value string `json:"value"`
+}
+
+type MonitoredCall struct {
+	ExpectedDepartureTime *time.Time `json:"ExpectedDepartureTime,omitempty"`
+	AimedDepartureTime    *time.Time `json:"AimedDepartureTime,omitempty"`
+	ExpectedArrivalTime   *time.Time `json:"ExpectedArrivalTime,omitempty"`
+	AimedArrivalTime      *time.Time `json:"AimedArrivalTime,omitempty"`
+	DepartureStatus       string     `json:"DepartureStatus,omitempty"`
+	ArrivalStatus         string     `json:"ArrivalStatus,omitempty"`
+}
+
+type MonitoredVehicleJourney struct {
+	DirectionRef    TextValue     `json:"DirectionRef"`
+	DirectionName   []TextValue   `json:"DirectionName"`
+	DestinationName []TextValue   `json:"DestinationName"`
+	MonitoredCall   MonitoredCall `json:"MonitoredCall"`
+}
+
 type StopVisit struct {
-	MonitoredVehicleJourney model.MonitoredVehicleJourney `json:"MonitoredVehicleJourney"`
+	MonitoredVehicleJourney MonitoredVehicleJourney `json:"MonitoredVehicleJourney"`
 }
 
 // Client defines the interface for interacting with the PRIM stop-monitoring API.

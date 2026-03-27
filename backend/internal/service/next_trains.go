@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/jossbnd/trainwatch/backend/internal/model"
+	"github.com/jossbnd/trainwatch/backend/internal/prim"
 )
 
 const defaultLimit = 5
@@ -90,7 +91,7 @@ func (s *service) GetNextTrains(ctx context.Context, stop, line, direction strin
 
 // matchDirection returns true if journey matches the given direction filter.
 // An empty filter matches everything.
-func matchDirection(journey model.MonitoredVehicleJourney, dirFilter string) bool {
+func matchDirection(journey prim.MonitoredVehicleJourney, dirFilter string) bool {
 	if dirFilter == "" {
 		return true
 	}

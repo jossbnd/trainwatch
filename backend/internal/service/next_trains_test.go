@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jossbnd/trainwatch/backend/internal/model"
 	"github.com/jossbnd/trainwatch/backend/internal/prim"
 )
 
@@ -39,12 +38,12 @@ func newService(visits []prim.StopVisit, err error) Service {
 func futureVisit(minutesFromNow int, destination, directionRef, status string) prim.StopVisit {
 	t := time.Now().Add(time.Duration(minutesFromNow) * time.Minute)
 	return prim.StopVisit{
-		MonitoredVehicleJourney: model.MonitoredVehicleJourney{
-			DirectionRef: model.TextValue{Value: directionRef},
-			DestinationName: []model.TextValue{
+		MonitoredVehicleJourney: prim.MonitoredVehicleJourney{
+			DirectionRef: prim.TextValue{Value: directionRef},
+			DestinationName: []prim.TextValue{
 				{Value: destination},
 			},
-			MonitoredCall: model.MonitoredCall{
+			MonitoredCall: prim.MonitoredCall{
 				ExpectedDepartureTime: &t,
 				DepartureStatus:       status,
 			},
@@ -80,8 +79,8 @@ func TestGetNextTrains_PastDeparturesFiltered(t *testing.T) {
 	past := time.Now().Add(-5 * time.Minute)
 	visits := []prim.StopVisit{
 		{
-			MonitoredVehicleJourney: model.MonitoredVehicleJourney{
-				MonitoredCall: model.MonitoredCall{
+			MonitoredVehicleJourney: prim.MonitoredVehicleJourney{
+				MonitoredCall: prim.MonitoredCall{
 					ExpectedDepartureTime: &past,
 				},
 			},

@@ -2,29 +2,6 @@ package model
 
 import "time"
 
-// TextValue is a PRIM typed text field.
-type TextValue struct {
-	Value string `json:"value"`
-}
-
-// MonitoredCall holds departure/arrival timing fields from PRIM.
-type MonitoredCall struct {
-	ExpectedDepartureTime *time.Time `json:"ExpectedDepartureTime,omitempty"`
-	AimedDepartureTime    *time.Time `json:"AimedDepartureTime,omitempty"`
-	ExpectedArrivalTime   *time.Time `json:"ExpectedArrivalTime,omitempty"`
-	AimedArrivalTime      *time.Time `json:"AimedArrivalTime,omitempty"`
-	DepartureStatus       string     `json:"DepartureStatus,omitempty"`
-	ArrivalStatus         string     `json:"ArrivalStatus,omitempty"`
-}
-
-// MonitoredVehicleJourney holds journey identification fields from PRIM.
-type MonitoredVehicleJourney struct {
-	DirectionRef    TextValue     `json:"DirectionRef"`
-	DirectionName   []TextValue   `json:"DirectionName"`
-	DestinationName []TextValue   `json:"DestinationName"`
-	MonitoredCall   MonitoredCall `json:"MonitoredCall"`
-}
-
 // NextTrain is the enriched train departure returned to API clients.
 type NextTrain struct {
 	EstimatedAt time.Time  `json:"estimated_at"`
