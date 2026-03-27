@@ -35,13 +35,17 @@ func newService(visits []prim.StopVisit, err error) Service {
 	})
 }
 
-func futureVisit(minutesFromNow int, destination, directionRef, status string) prim.StopVisit {
-	t := time.Now().Add(time.Duration(minutesFromNow) * time.Minute)
+// futureVisit builds a StopVisit departing minutesFromNow minutes from now,
+// delayed by delayMin minutes (0 = on time).
+func futureVisit(minutesFromNow, delayMin int, destination, directionRef, status string) prim.StopVisit {
+	aimed := time.Now().Add(time.Duration(minutesFromNow) * time.Minute)
+	expected := aimed.Add(time.Duration(delayMin) * time.Minute)
 	return prim.StopVisit{
 		DirectionRef:    prim.TextValue{Value: directionRef},
 		DestinationName: []prim.TextValue{{Value: destination}},
 		Timing: prim.Timing{
-			ExpectedDepartureTime: &t,
+			AimedDepartureTime:    &aimed,
+			ExpectedDepartureTime: &expected,
 			DepartureStatus:       status,
 		},
 	}
@@ -89,8 +93,8 @@ func TestGetNextTrains_PastDeparturesFiltered(t *testing.T) {
 // Test 4: direction filter by DirectionRef (exact, case-insensitive)
 func TestGetNextTrains_DirectionFilterByRef(t *testing.T) {
 	visits := []prim.StopVisit{
-		futureVisit(10, "Dest A", "A", "onTime"),
-		futureVisit(15, "Dest B", "B", "onTime"),
+		futureVisit(10, 0, "Dest A", "A", "onTime"),
+		futureVisit(15, 0, "Dest B", "B", "onTime"),
 	}
 	svc := newService(visits, nil)
 	trains, err := svc.GetNextTrains(context.Background(), "s", "l", "a", 5)
@@ -105,8 +109,8 @@ func TestGetNextTrains_DirectionFilterByRef(t *testing.T) {
 // Test 5: direction filter by DestinationName (substring, case-insensitive)
 func TestGetNextTrains_DirectionFilterByDestination(t *testing.T) {
 	visits := []prim.StopVisit{
-		futureVisit(5, "Gare du Nord", "", "onTime"),
-		futureVisit(8, "Chatelet", "", "onTime"),
+		futureVisit(5, 0, "Gare du Nord", "", "onTime"),
+		futureVisit(8, 0, "Chatelet", "", "onTime"),
 	}
 	svc := newService(visits, nil)
 	trains, err := svc.GetNextTrains(context.Background(), "s", "l", "nord", 5)
@@ -124,9 +128,9 @@ func TestGetNextTrains_DirectionFilterByDestination(t *testing.T) {
 // Test 6: results are sorted ascending by departure time
 func TestGetNextTrains_SortedAscending(t *testing.T) {
 	visits := []prim.StopVisit{
-		futureVisit(20, "B", "", ""),
-		futureVisit(5, "A", "", ""),
-		futureVisit(10, "C", "", ""),
+		futureVisit(20, 0, "B", "", ""),
+		futureVisit(5, 0, "A", "", ""),
+		futureVisit(10, 0, "C", "", ""),
 	}
 	svc := newService(visits, nil)
 	trains, err := svc.GetNextTrains(context.Background(), "s", "l", "", 5)
@@ -141,13 +145,32 @@ func TestGetNextTrains_SortedAscending(t *testing.T) {
 	}
 }
 
-// Test 7: limit is enforced
+// Test 7: delay_minutes reflects gap between expected and aimed departure
+func TestGetNextTrains_DelayMinutes(t *testing.T) {
+	visits := []prim.StopVisit{
+		futureVisit(10, 3, "A", "", "delayed"), // 3 min late
+		futureVisit(20, 0, "B", "", "onTime"),  // on time
+	}
+	svc := newService(visits, nil)
+	trains, err := svc.GetNextTrains(context.Background(), "s", "l", "", 5)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if trains[0].DelayMinutes != 3 {
+		t.Errorf("expected delay 3, got %d", trains[0].DelayMinutes)
+	}
+	if trains[1].DelayMinutes != 0 {
+		t.Errorf("expected delay 0, got %d", trains[1].DelayMinutes)
+	}
+}
+
+// Test 9: limit is enforced
 func TestGetNextTrains_LimitEnforced(t *testing.T) {
 	visits := []prim.StopVisit{
-		futureVisit(5, "A", "", ""),
-		futureVisit(10, "B", "", ""),
-		futureVisit(15, "C", "", ""),
-		futureVisit(20, "D", "", ""),
+		futureVisit(5, 0, "A", "", ""),
+		futureVisit(10, 0, "B", "", ""),
+		futureVisit(15, 0, "C", "", ""),
+		futureVisit(20, 0, "D", "", ""),
 	}
 	svc := newService(visits, nil)
 	trains, err := svc.GetNextTrains(context.Background(), "s", "l", "", 2)
