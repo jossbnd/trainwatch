@@ -1,6 +1,7 @@
 package prim
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,34 +10,33 @@ import (
 	"time"
 )
 
+type TextValue struct {
+	Value string `json:"value"`
+}
+
+type Timing struct {
+	ExpectedDepartureTime *time.Time `json:"ExpectedDepartureTime,omitempty"`
+	AimedDepartureTime    *time.Time `json:"AimedDepartureTime,omitempty"`
+	ExpectedArrivalTime   *time.Time `json:"ExpectedArrivalTime,omitempty"`
+	AimedArrivalTime      *time.Time `json:"AimedArrivalTime,omitempty"`
+	DepartureStatus       string     `json:"DepartureStatus,omitempty"`
+	ArrivalStatus         string     `json:"ArrivalStatus,omitempty"`
+}
+
+// StopVisit represents a train stopping at a station, as returned by the PRIM API.
 type StopVisit struct {
-	MonitoredVehicleJourney struct {
-		DirectionRef struct {
-			Value string `json:"value"`
-		} `json:"DirectionRef"`
-		DirectionName []struct {
-			Value string `json:"value"`
-		} `json:"DirectionName"`
-		DestinationName []struct {
-			Value string `json:"value"`
-		} `json:"DestinationName"`
-		MonitoredCall struct {
-			ExpectedDepartureTime *time.Time `json:"ExpectedDepartureTime,omitempty"`
-			AimedDepartureTime    *time.Time `json:"AimedDepartureTime,omitempty"`
-			ExpectedArrivalTime   *time.Time `json:"ExpectedArrivalTime,omitempty"`
-			AimedArrivalTime      *time.Time `json:"AimedArrivalTime,omitempty"`
-			DepartureStatus       string     `json:"DepartureStatus,omitempty"`
-			ArrivalStatus         string     `json:"ArrivalStatus,omitempty"`
-		} `json:"MonitoredCall"`
-	} `json:"MonitoredVehicleJourney"`
+	DirectionRef    TextValue     `json:"DirectionRef"`
+	DirectionName   []TextValue   `json:"DirectionName"`
+	DestinationName []TextValue   `json:"DestinationName"`
+	Timing   Timing `json:"MonitoredCall"`
 }
 
 // Client defines the interface for interacting with the PRIM stop-monitoring API.
 type Client interface {
 	// FetchStopVisits queries the PRIM stop-monitoring endpoint using the given
 	// stopRef and lineRef, parses the SIRI response, and returns a slice of
-	// StopVisit representing trains arriving, departing, or stopping at the station.
-	FetchStopVisits(stopRef, lineRef string) ([]StopVisit, error)
+	// StopVisit for trains stopping at the station.
+	FetchStopVisits(ctx context.Context, stopRef, lineRef string) ([]StopVisit, error)
 }
 
 type client struct {
@@ -61,10 +61,10 @@ func New(baseURL, apiKey string) (Client, error) {
 	}, nil
 }
 
-func (c *client) FetchStopVisits(stopRef, lineRef string) ([]StopVisit, error) {
+func (c *client) FetchStopVisits(ctx context.Context, stopRef, lineRef string) ([]StopVisit, error) {
 	// Build request
 	endpoint := fmt.Sprintf("%s/marketplace/stop-monitoring", c.baseURL)
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build request: %w", err)
 	}
@@ -100,12 +100,14 @@ func (c *client) FetchStopVisits(stopRef, lineRef string) ([]StopVisit, error) {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// Unmarshal only the useful fields into StopVisit entries.
+	// Unmarshal only the useful fields from the SIRI response.
 	var wrapper struct {
 		Siri struct {
 			ServiceDelivery struct {
 				StopMonitoringDelivery []struct {
-					MonitoredStopVisit []StopVisit `json:"MonitoredStopVisit"`
+					MonitoredStopVisit []struct {
+						MonitoredVehicleJourney StopVisit `json:"MonitoredVehicleJourney"`
+					} `json:"MonitoredStopVisit"`
 				} `json:"StopMonitoringDelivery"`
 			} `json:"ServiceDelivery"`
 		} `json:"Siri"`
@@ -114,10 +116,12 @@ func (c *client) FetchStopVisits(stopRef, lineRef string) ([]StopVisit, error) {
 		return nil, fmt.Errorf("failed to parse prim response: %w", err)
 	}
 
-	// Aggregate all monitored stop visits from all deliveries.
+	// Aggregate stop visits from all deliveries.
 	var visits []StopVisit
 	for _, delivery := range wrapper.Siri.ServiceDelivery.StopMonitoringDelivery {
-		visits = append(visits, delivery.MonitoredStopVisit...)
+		for _, sv := range delivery.MonitoredStopVisit {
+			visits = append(visits, sv.MonitoredVehicleJourney)
+		}
 	}
 
 	return visits, nil

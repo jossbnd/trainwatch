@@ -45,3 +45,7 @@ node_modules/
 # Misc
 dist/
 coverage/
+
+# Claude Code
+.claude/
+docs/superpowers/
