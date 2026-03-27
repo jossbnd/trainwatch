@@ -1,34 +1,19 @@
 package prim
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/jossbnd/trainwatch/backend/internal/model"
 )
 
 type StopVisit struct {
-	MonitoredVehicleJourney struct {
-		DirectionRef struct {
-			Value string `json:"value"`
-		} `json:"DirectionRef"`
-		DirectionName []struct {
-			Value string `json:"value"`
-		} `json:"DirectionName"`
-		DestinationName []struct {
-			Value string `json:"value"`
-		} `json:"DestinationName"`
-		MonitoredCall struct {
-			ExpectedDepartureTime *time.Time `json:"ExpectedDepartureTime,omitempty"`
-			AimedDepartureTime    *time.Time `json:"AimedDepartureTime,omitempty"`
-			ExpectedArrivalTime   *time.Time `json:"ExpectedArrivalTime,omitempty"`
-			AimedArrivalTime      *time.Time `json:"AimedArrivalTime,omitempty"`
-			DepartureStatus       string     `json:"DepartureStatus,omitempty"`
-			ArrivalStatus         string     `json:"ArrivalStatus,omitempty"`
-		} `json:"MonitoredCall"`
-	} `json:"MonitoredVehicleJourney"`
+	MonitoredVehicleJourney model.MonitoredVehicleJourney `json:"MonitoredVehicleJourney"`
 }
 
 // Client defines the interface for interacting with the PRIM stop-monitoring API.
@@ -36,7 +21,7 @@ type Client interface {
 	// FetchStopVisits queries the PRIM stop-monitoring endpoint using the given
 	// stopRef and lineRef, parses the SIRI response, and returns a slice of
 	// StopVisit representing trains arriving, departing, or stopping at the station.
-	FetchStopVisits(stopRef, lineRef string) ([]StopVisit, error)
+	FetchStopVisits(ctx context.Context, stopRef, lineRef string) ([]StopVisit, error)
 }
 
 type client struct {
@@ -61,10 +46,10 @@ func New(baseURL, apiKey string) (Client, error) {
 	}, nil
 }
 
-func (c *client) FetchStopVisits(stopRef, lineRef string) ([]StopVisit, error) {
+func (c *client) FetchStopVisits(ctx context.Context, stopRef, lineRef string) ([]StopVisit, error) {
 	// Build request
 	endpoint := fmt.Sprintf("%s/marketplace/stop-monitoring", c.baseURL)
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build request: %w", err)
 	}

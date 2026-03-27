@@ -1,8 +1,10 @@
 package service
 
 import (
-	"github.com/jossbnd/trainwatch/backend/internal/api/dto"
+	"context"
+
 	"github.com/jossbnd/trainwatch/backend/internal/logger"
+	"github.com/jossbnd/trainwatch/backend/internal/model"
 	"github.com/jossbnd/trainwatch/backend/internal/prim"
 )
 
@@ -12,19 +14,20 @@ type Input struct {
 }
 
 type Service interface {
-	// GetNextTrain returns upcoming trains for the given stop, line and
-	// direction. If direction is empty, returns all directions.
-	GetNextTrains(stop, line, direction string) ([]dto.NextTrain, error)
+	// GetNextTrains returns upcoming trains for the given stop, line and
+	// direction. If direction is empty, returns all directions. At most limit
+	// results are returned (0 means use default of 5).
+	GetNextTrains(ctx context.Context, stop, line, direction string, limit int) ([]model.NextTrain, error)
 }
 
 type service struct {
-	logger     logger.Logger
+	log        logger.Logger
 	primClient prim.Client
 }
 
-func New(i Input) Service {
+func New(input Input) Service {
 	return &service{
-		logger:     i.Logger,
-		primClient: i.PrimClient,
+		log:        input.Logger,
+		primClient: input.PrimClient,
 	}
 }
