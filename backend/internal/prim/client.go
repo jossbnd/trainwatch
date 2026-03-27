@@ -23,22 +23,19 @@ type MonitoredCall struct {
 	ArrivalStatus         string     `json:"ArrivalStatus,omitempty"`
 }
 
-type MonitoredVehicleJourney struct {
+// StopVisit represents a train stopping at a station, as returned by the PRIM API.
+type StopVisit struct {
 	DirectionRef    TextValue     `json:"DirectionRef"`
 	DirectionName   []TextValue   `json:"DirectionName"`
 	DestinationName []TextValue   `json:"DestinationName"`
 	MonitoredCall   MonitoredCall `json:"MonitoredCall"`
 }
 
-type StopVisit struct {
-	MonitoredVehicleJourney MonitoredVehicleJourney `json:"MonitoredVehicleJourney"`
-}
-
 // Client defines the interface for interacting with the PRIM stop-monitoring API.
 type Client interface {
 	// FetchStopVisits queries the PRIM stop-monitoring endpoint using the given
 	// stopRef and lineRef, parses the SIRI response, and returns a slice of
-	// StopVisit representing trains arriving, departing, or stopping at the station.
+	// StopVisit for trains stopping at the station.
 	FetchStopVisits(ctx context.Context, stopRef, lineRef string) ([]StopVisit, error)
 }
 
@@ -103,12 +100,14 @@ func (c *client) FetchStopVisits(ctx context.Context, stopRef, lineRef string) (
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	// Unmarshal only the useful fields into StopVisit entries.
+	// Unmarshal only the useful fields from the SIRI response.
 	var wrapper struct {
 		Siri struct {
 			ServiceDelivery struct {
 				StopMonitoringDelivery []struct {
-					MonitoredStopVisit []StopVisit `json:"MonitoredStopVisit"`
+					MonitoredStopVisit []struct {
+						MonitoredVehicleJourney StopVisit `json:"MonitoredVehicleJourney"`
+					} `json:"MonitoredStopVisit"`
 				} `json:"StopMonitoringDelivery"`
 			} `json:"ServiceDelivery"`
 		} `json:"Siri"`
@@ -117,10 +116,12 @@ func (c *client) FetchStopVisits(ctx context.Context, stopRef, lineRef string) (
 		return nil, fmt.Errorf("failed to parse prim response: %w", err)
 	}
 
-	// Aggregate all monitored stop visits from all deliveries.
+	// Aggregate stop visits from all deliveries.
 	var visits []StopVisit
 	for _, delivery := range wrapper.Siri.ServiceDelivery.StopMonitoringDelivery {
-		visits = append(visits, delivery.MonitoredStopVisit...)
+		for _, sv := range delivery.MonitoredStopVisit {
+			visits = append(visits, sv.MonitoredVehicleJourney)
+		}
 	}
 
 	return visits, nil

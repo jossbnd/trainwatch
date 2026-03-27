@@ -23,38 +23,37 @@ func (s *service) GetNextTrains(ctx context.Context, stop, line, direction strin
 		limit = defaultLimit
 	}
 
-	// Fetch next stop visits from prim
+	// Fetch next visits from prim
 	visits, err := s.primClient.FetchStopVisits(ctx, stop, line)
 	if err != nil {
 		s.log.Error(fmt.Sprintf("service: failed to fetch stop visits stop=%s line=%s", stop, line), "error", err)
 		return nil, err
 	}
-	s.log.Debug(fmt.Sprintf("fetched stop visits count=%d stop=%s line=%s", len(visits), stop, line))
+	s.log.Debug(fmt.Sprintf("fetched visits count=%d stop=%s line=%s", len(visits), stop, line))
 
 	// Process visits
 	now := time.Now()
 	var trains []model.NextTrain
 	for _, visit := range visits {
-		journey := visit.MonitoredVehicleJourney
 
 		// Match direction (case-insensitive contains match against
 		// DirectionRef, DirectionName, DestinationName). If direction is
 		// empty, accept all.
 		dirFilter := strings.TrimSpace(direction)
-		if !matchDirection(journey, dirFilter) {
+		if !matchDirection(visit, dirFilter) {
 			continue
 		}
 
 		// Choose expected departure time if available, fall back to aimed.
 		var estimatedAt time.Time
 		var aimedAt *time.Time
-		if journey.MonitoredCall.AimedDepartureTime != nil {
-			aimedAt = journey.MonitoredCall.AimedDepartureTime
+		if visit.MonitoredCall.AimedDepartureTime != nil {
+			aimedAt = visit.MonitoredCall.AimedDepartureTime
 		}
-		if journey.MonitoredCall.ExpectedDepartureTime != nil {
-			estimatedAt = *journey.MonitoredCall.ExpectedDepartureTime
-		} else if journey.MonitoredCall.AimedDepartureTime != nil {
-			estimatedAt = *journey.MonitoredCall.AimedDepartureTime
+		if visit.MonitoredCall.ExpectedDepartureTime != nil {
+			estimatedAt = *visit.MonitoredCall.ExpectedDepartureTime
+		} else if visit.MonitoredCall.AimedDepartureTime != nil {
+			estimatedAt = *visit.MonitoredCall.AimedDepartureTime
 		}
 		if estimatedAt.IsZero() {
 			continue
@@ -67,11 +66,11 @@ func (s *service) GetNextTrains(ctx context.Context, stop, line, direction strin
 
 		// Extract destination from first DestinationName entry.
 		destination := ""
-		if len(journey.DestinationName) > 0 {
-			destination = journey.DestinationName[0].Value
+		if len(visit.DestinationName) > 0 {
+			destination = visit.DestinationName[0].Value
 		}
 
-		status := journey.MonitoredCall.DepartureStatus
+		status := visit.MonitoredCall.DepartureStatus
 		trains = append(trains, model.NewNextTrain(estimatedAt, aimedAt, destination, status))
 	}
 
@@ -89,21 +88,21 @@ func (s *service) GetNextTrains(ctx context.Context, stop, line, direction strin
 	return trains, nil
 }
 
-// matchDirection returns true if journey matches the given direction filter.
+// matchDirection returns true if visit matches the given direction filter.
 // An empty filter matches everything.
-func matchDirection(journey prim.MonitoredVehicleJourney, dirFilter string) bool {
+func matchDirection(visit prim.StopVisit, dirFilter string) bool {
 	if dirFilter == "" {
 		return true
 	}
-	if journey.DirectionRef.Value != "" && strings.EqualFold(journey.DirectionRef.Value, dirFilter) {
+	if visit.DirectionRef.Value != "" && strings.EqualFold(visit.DirectionRef.Value, dirFilter) {
 		return true
 	}
-	for _, dn := range journey.DirectionName {
+	for _, dn := range visit.DirectionName {
 		if strings.Contains(strings.ToLower(dn.Value), strings.ToLower(dirFilter)) {
 			return true
 		}
 	}
-	for _, dest := range journey.DestinationName {
+	for _, dest := range visit.DestinationName {
 		if strings.Contains(strings.ToLower(dest.Value), strings.ToLower(dirFilter)) {
 			return true
 		}

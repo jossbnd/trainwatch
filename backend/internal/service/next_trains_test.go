@@ -38,15 +38,11 @@ func newService(visits []prim.StopVisit, err error) Service {
 func futureVisit(minutesFromNow int, destination, directionRef, status string) prim.StopVisit {
 	t := time.Now().Add(time.Duration(minutesFromNow) * time.Minute)
 	return prim.StopVisit{
-		MonitoredVehicleJourney: prim.MonitoredVehicleJourney{
-			DirectionRef: prim.TextValue{Value: directionRef},
-			DestinationName: []prim.TextValue{
-				{Value: destination},
-			},
-			MonitoredCall: prim.MonitoredCall{
-				ExpectedDepartureTime: &t,
-				DepartureStatus:       status,
-			},
+		DirectionRef:    prim.TextValue{Value: directionRef},
+		DestinationName: []prim.TextValue{{Value: destination}},
+		MonitoredCall: prim.MonitoredCall{
+			ExpectedDepartureTime: &t,
+			DepartureStatus:       status,
 		},
 	}
 }
@@ -78,13 +74,7 @@ func TestGetNextTrains_EmptyVisits(t *testing.T) {
 func TestGetNextTrains_PastDeparturesFiltered(t *testing.T) {
 	past := time.Now().Add(-5 * time.Minute)
 	visits := []prim.StopVisit{
-		{
-			MonitoredVehicleJourney: prim.MonitoredVehicleJourney{
-				MonitoredCall: prim.MonitoredCall{
-					ExpectedDepartureTime: &past,
-				},
-			},
-		},
+		{MonitoredCall: prim.MonitoredCall{ExpectedDepartureTime: &past}},
 	}
 	svc := newService(visits, nil)
 	trains, err := svc.GetNextTrains(context.Background(), "s", "l", "", 5)
