@@ -40,7 +40,7 @@ func futureVisit(minutesFromNow int, destination, directionRef, status string) p
 	return prim.StopVisit{
 		DirectionRef:    prim.TextValue{Value: directionRef},
 		DestinationName: []prim.TextValue{{Value: destination}},
-		MonitoredCall: prim.MonitoredCall{
+		Timing: prim.Timing{
 			ExpectedDepartureTime: &t,
 			DepartureStatus:       status,
 		},
@@ -74,7 +74,7 @@ func TestGetNextTrains_EmptyVisits(t *testing.T) {
 func TestGetNextTrains_PastDeparturesFiltered(t *testing.T) {
 	past := time.Now().Add(-5 * time.Minute)
 	visits := []prim.StopVisit{
-		{MonitoredCall: prim.MonitoredCall{ExpectedDepartureTime: &past}},
+		{Timing: prim.Timing{ExpectedDepartureTime: &past}},
 	}
 	svc := newService(visits, nil)
 	trains, err := svc.GetNextTrains(context.Background(), "s", "l", "", 5)

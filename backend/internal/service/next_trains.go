@@ -47,13 +47,13 @@ func (s *service) GetNextTrains(ctx context.Context, stop, line, direction strin
 		// Choose expected departure time if available, fall back to aimed.
 		var estimatedAt time.Time
 		var aimedAt *time.Time
-		if visit.MonitoredCall.AimedDepartureTime != nil {
-			aimedAt = visit.MonitoredCall.AimedDepartureTime
+		if visit.Timing.AimedDepartureTime != nil {
+			aimedAt = visit.Timing.AimedDepartureTime
 		}
-		if visit.MonitoredCall.ExpectedDepartureTime != nil {
-			estimatedAt = *visit.MonitoredCall.ExpectedDepartureTime
-		} else if visit.MonitoredCall.AimedDepartureTime != nil {
-			estimatedAt = *visit.MonitoredCall.AimedDepartureTime
+		if visit.Timing.ExpectedDepartureTime != nil {
+			estimatedAt = *visit.Timing.ExpectedDepartureTime
+		} else if visit.Timing.AimedDepartureTime != nil {
+			estimatedAt = *visit.Timing.AimedDepartureTime
 		}
 		if estimatedAt.IsZero() {
 			continue
@@ -70,7 +70,7 @@ func (s *service) GetNextTrains(ctx context.Context, stop, line, direction strin
 			destination = visit.DestinationName[0].Value
 		}
 
-		status := visit.MonitoredCall.DepartureStatus
+		status := visit.Timing.DepartureStatus
 		trains = append(trains, model.NewNextTrain(estimatedAt, aimedAt, destination, status))
 	}
 

@@ -14,7 +14,7 @@ type TextValue struct {
 	Value string `json:"value"`
 }
 
-type MonitoredCall struct {
+type Timing struct {
 	ExpectedDepartureTime *time.Time `json:"ExpectedDepartureTime,omitempty"`
 	AimedDepartureTime    *time.Time `json:"AimedDepartureTime,omitempty"`
 	ExpectedArrivalTime   *time.Time `json:"ExpectedArrivalTime,omitempty"`
@@ -28,7 +28,7 @@ type StopVisit struct {
 	DirectionRef    TextValue     `json:"DirectionRef"`
 	DirectionName   []TextValue   `json:"DirectionName"`
 	DestinationName []TextValue   `json:"DestinationName"`
-	MonitoredCall   MonitoredCall `json:"MonitoredCall"`
+	Timing   Timing `json:"Timing"`
 }
 
 // Client defines the interface for interacting with the PRIM stop-monitoring API.
