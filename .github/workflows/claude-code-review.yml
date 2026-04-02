@@ -33,5 +33,14 @@ jobs:
           prompt: |
             /code-review:code-review ${{ github.repository }}/pull/${{ github.event.issue.number }}
 
-            For each issue found, post an inline review comment directly on the relevant line using the GitHub pull request review API.
-            Use GitHub suggestion blocks (```suggestion) wherever a concrete fix can be proposed, so the author can apply it with one click.
+            Once the review is complete, do the following in order:
+
+            1. Post a general summary comment on the PR (not inline) that includes:
+               - A brief overall assessment
+               - Positives / what's done well
+               - Issues / concerns found
+               - Suggested improvements
+               - Conclusion (approve / request changes / needs discussion)
+
+            2. For each specific issue found, post an inline review comment directly on the relevant line using the GitHub pull request review API.
+               Use GitHub suggestion blocks (```suggestion) wherever a concrete fix can be proposed, so the author can apply it with one click.
