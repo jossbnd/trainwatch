@@ -22,7 +22,7 @@ Real-time train departure monitor for Île-de-France, with a Go backend and a Ga
 
 ```bash
 cp backend/.env.example backend/.env
-# Edit backend/.env and fill in PRIM_API_KEY
+# Edit backend/.env and fill in PRIM_API_KEY and API_KEY
 go run ./backend/cmd
 ```
 
@@ -51,7 +51,8 @@ Returns upcoming departures for a given stop and line.
 | `limit` | int | no | Max number of results |
 
 ```bash
-curl "http://localhost:8080/next-train?stop=STIF%3AStopPoint%3AQ%3A473920%3A&line=STIF%3ALine%3A%3AC01742%3A&limit=2"
+curl "http://localhost:8080/next-train?stop=STIF%3AStopPoint%3AQ%3A473920%3A&line=STIF%3ALine%3A%3AC01742%3A&limit=2" \
+  -H 'X-API-Key: <your_key>'
 ```
 
 ```json
