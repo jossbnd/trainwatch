@@ -6,12 +6,14 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jossbnd/trainwatch/backend/internal/logger"
+	"github.com/jossbnd/trainwatch/backend/internal/middleware"
 	"github.com/jossbnd/trainwatch/backend/internal/service"
 )
 
 type Input struct {
 	Logger  logger.Logger
 	Service service.Service
+	APIKey  string
 }
 
 type handler struct {
@@ -30,7 +32,10 @@ func New(input Input) *gin.Engine {
 	}
 
 	r.GET("/health", healthHandler)
-	r.GET("/next-train", h.GetNextTrainHandler)
+
+	auth := r.Group("/")
+	auth.Use(middleware.APIKeyAuth(input.APIKey))
+	auth.GET("/next-train", h.GetNextTrainHandler)
 	return r
 }
 

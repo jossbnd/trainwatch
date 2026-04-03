@@ -1,6 +1,6 @@
 module github.com/jossbnd/trainwatch/backend
 
-go 1.25.0
+go 1.24.7
 
 require (
 	github.com/gin-gonic/gin v1.11.0

@@ -51,6 +51,7 @@ func main() {
 	r := api.New(api.Input{
 		Logger:  log,
 		Service: svc,
+		APIKey:  cfg.APIKey,
 	})
 
 	addr := fmt.Sprintf(":%s", cfg.Port)
