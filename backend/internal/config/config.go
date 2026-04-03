@@ -14,6 +14,7 @@ type Config struct {
 	GinMode     string
 	PrimBaseURL string
 	PrimAPIKey  string
+	APIKey      string
 }
 
 // Load loads and validates the configuration.
@@ -30,6 +31,10 @@ func Load() (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	apiKey, err := requireEnv("API_KEY")
+	if err != nil {
+		return Config{}, err
+	}
 
 	cfg := Config{
 		Env:         getEnv("ENV", "dev"),
@@ -38,6 +43,7 @@ func Load() (Config, error) {
 		GinMode:     getEnv("GIN_MODE", "debug"),
 		PrimBaseURL: primBase,
 		PrimAPIKey:  primKey,
+		APIKey:      apiKey,
 	}
 	return cfg, nil
 }

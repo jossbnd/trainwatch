@@ -1,38 +1,65 @@
 
 # trainwatch - backend
 
-Simple API to fetch the next train (RATP) using the public PRIM API.
+Go REST API fetching next departures from the PRIM API (Île-de-France Mobilités).
 
-Prerequisites
+## Prerequisites
+
 - Go 1.25+
+- A PRIM API key — [data.iledefrance-mobilites.fr](https://data.iledefrance-mobilites.fr)
 
-Run the server
+## Setup
 
 ```bash
+cp .env.example .env
+# Fill in PRIM_API_KEY and API_KEY in .env
 go run ./cmd
 ```
 
-Endpoint
+The server starts on port `8080` by default.
 
-GET `/next-train`
+## Authentication
 
-Required query parameters:
-- `type`: transport type (`metro`, `rer`, `tram`, ...)
-- `line`: line identifier (e.g. `1`)
-- `station`: station name (e.g. `Chatelet`)
-- `direction`: direction or destination name (e.g. `A` or `La Defense`)
-
-Example
+All endpoints except `/health` require an `X-API-Key` header matching the `API_KEY` value in `.env`.
 
 ```bash
-curl "http://localhost:8080/next-train?type=metro&line=1&station=Chatelet&direction=A"
+curl http://localhost:8080/next-train?... -H 'X-API-Key: <your_key>'
 ```
 
-Behavior
-- If no upcoming train is found, the API responds with `404` and an error message.
+## Endpoints
 
-Possible improvements
-- Add unit tests for the `service` layer and a mock for `internal/prim`.
-- Add normalization for station names (mapping, fuzzy matching).
-- Add a healthcheck endpoint.
+### `GET /health`
 
+```bash
+curl http://localhost:8080/health
+# {"status":"ok"}
+```
+
+### `GET /next-train`
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `stop` | string | yes | Stop monitoring ref (PRIM stop ID) |
+| `line` | string | yes | Line ref (PRIM line ID) |
+| `direction` | string | no | Filter by direction ref |
+| `limit` | int | no | Max number of results |
+
+```bash
+curl "http://localhost:8080/next-train?stop=STIF%3AStopArea%3ASP%3A43198%3A&line=STIF%3ALine%3A%3AC01742%3A" \
+  -H 'X-API-Key: <your_key>'
+```
+
+## Project structure
+
+```
+backend/
+├── cmd/main.go          # entrypoint
+└── internal/
+    ├── api/             # HTTP handlers
+    ├── config/          # config loading
+    ├── logger/          # logger abstraction
+    ├── middleware/      # Gin middlewares
+    ├── model/           # data structs
+    ├── prim/            # PRIM HTTP client
+    └── service/         # business logic
+```
