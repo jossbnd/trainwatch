@@ -14,7 +14,7 @@ up:
 	docker compose up -d traefik && docker compose up trainwatch-backend
 
 reup:
-	docker compose up -d traefik && docker compose up --force-recreate trainwatch-backend
+	docker compose up -d traefik && docker compose up --force-recreate --build trainwatch-backend
 
 deps:
 	go mod tidy
