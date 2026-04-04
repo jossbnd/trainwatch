@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/jossbnd/trainwatch/backend/internal/logger"
 	"github.com/jossbnd/trainwatch/backend/internal/middleware"
 	"github.com/jossbnd/trainwatch/backend/internal/service"

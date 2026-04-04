@@ -25,10 +25,10 @@ type Timing struct {
 
 // StopVisit represents a train stopping at a station, as returned by the PRIM API.
 type StopVisit struct {
-	DirectionRef    TextValue     `json:"DirectionRef"`
-	DirectionName   []TextValue   `json:"DirectionName"`
-	DestinationName []TextValue   `json:"DestinationName"`
-	Timing   Timing `json:"MonitoredCall"`
+	DirectionRef    TextValue   `json:"DirectionRef"`
+	DirectionName   []TextValue `json:"DirectionName"`
+	DestinationName []TextValue `json:"DestinationName"`
+	Timing          Timing      `json:"MonitoredCall"`
 }
 
 // Client defines the interface for interacting with the PRIM stop-monitoring API.
@@ -47,7 +47,7 @@ type client struct {
 
 func New(baseURL, apiKey string) (Client, error) {
 	// validate scheme
-	if !(strings.HasPrefix(baseURL, "http://") || strings.HasPrefix(baseURL, "https://")) {
+	if !strings.HasPrefix(baseURL, "http://") && !strings.HasPrefix(baseURL, "https://") {
 		return nil, fmt.Errorf("invalid PRIM base URL scheme")
 	}
 
@@ -86,7 +86,7 @@ func (c *client) FetchStopVisits(ctx context.Context, stopRef, lineRef string) (
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	// Check for non-2xx status codes
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
