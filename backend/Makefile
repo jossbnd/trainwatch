@@ -1,4 +1,4 @@
-.PHONY: fmt lint test
+.PHONY: fmt lint test up reup deps
 
 fmt:
 	gofumpt -w ./cmd ./internal
@@ -9,3 +9,13 @@ lint:
 
 test:
 	go test ./...
+
+up:
+	docker compose up -d traefik && docker compose up trainwatch-backend
+
+reup:
+	docker compose up -d traefik && docker compose up --force-recreate trainwatch-backend
+
+deps:
+	go mod tidy
+	go mod vendor
