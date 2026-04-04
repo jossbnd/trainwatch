@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/jossbnd/trainwatch/backend/internal/api"
 	"github.com/jossbnd/trainwatch/backend/internal/config"
 	"github.com/jossbnd/trainwatch/backend/internal/logger"
