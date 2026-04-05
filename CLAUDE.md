@@ -14,7 +14,7 @@
 - Do not commit `.env` files or secrets. Use `.env.example` for templates.
 
 ## Code style
-- Follow standard Go conventions: `gofmt`, short variable names, error handling with early returns.
+- Follow standard Go conventions: `gofumpt`, short variable names, error handling with early returns.
 - Keep functions small and focused. Prefer returning errors over panicking.
 - Do not add comments that restate the code. Only comment non-obvious logic.
 

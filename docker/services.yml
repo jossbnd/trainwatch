@@ -1,0 +1,36 @@
+http:
+  routers:
+    trainwatch:
+      rule: "Host(`api.localhost`)"
+      entryPoints:
+        - websecure
+      tls: {}
+      service: trainwatch
+      middlewares:
+        - cors
+
+  middlewares:
+    cors:
+      headers:
+        accessControlAllowOriginList:
+          - "*"
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        accessControlAllowHeaders:
+          - "*"
+        accessControlMaxAge: 86400
+
+  services:
+    trainwatch:
+      loadBalancer:
+        servers:
+          - url: "http://trainwatch-backend:3025"
+
+tls:
+  certificates:
+    - certFile: /etc/traefik/certs/cert.pem
+      keyFile: /etc/traefik/certs/key.pem
