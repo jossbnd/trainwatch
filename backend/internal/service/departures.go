@@ -13,17 +13,16 @@ import (
 
 const defaultLimit = 5
 
-// GetNextTrains fetches the next departing trains for the given stop, line and
+// GetDepartures fetches the next departures for the given stop, line and
 // direction. If direction is empty, returns all directions. At most limit
 // results are returned; if limit <= 0 the default of 5 is used.
-func (s *service) GetNextTrains(ctx context.Context, stop, line, direction string, limit int) ([]model.NextTrain, error) {
-	s.log.Debug(fmt.Sprintf("GetNextTrains called stop=%s line=%s direction=%s limit=%d", stop, line, direction, limit))
+func (s *service) GetDepartures(ctx context.Context, stop, line, direction string, limit int) ([]model.Departure, error) {
+	s.log.Debug(fmt.Sprintf("GetDepartures called stop=%s line=%s direction=%s limit=%d", stop, line, direction, limit))
 
 	if limit <= 0 {
 		limit = defaultLimit
 	}
 
-	// Fetch next visits from prim
 	visits, err := s.primClient.FetchStopVisits(ctx, stop, line)
 	if err != nil {
 		s.log.Error(fmt.Sprintf("service: failed to fetch stop visits stop=%s line=%s", stop, line), "error", err)
@@ -31,20 +30,14 @@ func (s *service) GetNextTrains(ctx context.Context, stop, line, direction strin
 	}
 	s.log.Debug(fmt.Sprintf("fetched visits count=%d stop=%s line=%s", len(visits), stop, line))
 
-	// Process visits
 	now := time.Now()
-	var trains []model.NextTrain
+	var departures []model.Departure
 	for _, visit := range visits {
-
-		// Match direction (case-insensitive contains match against
-		// DirectionRef, DirectionName, DestinationName). If direction is
-		// empty, accept all.
 		dirFilter := strings.TrimSpace(direction)
 		if !matchDirection(visit, dirFilter) {
 			continue
 		}
 
-		// Choose expected departure time if available, fall back to aimed.
 		var estimatedAt time.Time
 		var aimedAt *time.Time
 		if visit.Timing.AimedDepartureTime != nil {
@@ -59,33 +52,29 @@ func (s *service) GetNextTrains(ctx context.Context, stop, line, direction strin
 			continue
 		}
 
-		// Skip past departures (more than 1 minute ago)
 		if estimatedAt.Before(now.Add(-1 * time.Minute)) {
 			continue
 		}
 
-		// Extract destination from first DestinationName entry.
 		destination := ""
 		if len(visit.DestinationName) > 0 {
 			destination = visit.DestinationName[0].Value
 		}
 
 		status := visit.Timing.DepartureStatus
-		trains = append(trains, model.NewNextTrain(estimatedAt, aimedAt, destination, status))
+		departures = append(departures, model.NewDeparture(estimatedAt, aimedAt, destination, status))
 	}
 
-	// Sort ascending by departure time.
-	sort.Slice(trains, func(i, j int) bool { return trains[i].EstimatedAt.Before(trains[j].EstimatedAt) })
+	sort.Slice(departures, func(i, j int) bool { return departures[i].EstimatedAt.Before(departures[j].EstimatedAt) })
 
-	// Apply limit.
-	if len(trains) > limit {
-		trains = trains[:limit]
+	if len(departures) > limit {
+		departures = departures[:limit]
 	}
 
-	s.log.Info(fmt.Sprintf("service: returning upcoming trains count=%d stop=%s line=%s direction=%s",
-		len(trains), stop, line, direction,
+	s.log.Info(fmt.Sprintf("service: returning upcoming departures count=%d stop=%s line=%s direction=%s",
+		len(departures), stop, line, direction,
 	))
-	return trains, nil
+	return departures, nil
 }
 
 // matchDirection returns true if visit matches the given direction filter.
