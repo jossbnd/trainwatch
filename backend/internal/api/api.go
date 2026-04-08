@@ -36,7 +36,7 @@ func New(input Input) *gin.Engine {
 
 	auth := r.Group("/")
 	auth.Use(middleware.APIKeyAuth(input.APIKey))
-	auth.GET("/next-train", h.GetNextTrainHandler)
+	auth.GET("/departures", h.getDeparturesHandler)
 	return r
 }
 

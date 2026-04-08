@@ -9,9 +9,13 @@
 - Always show the full content (title, body) of any PR, issue, or comment and wait for user approval before posting to GitHub.
 
 ## Language & project
-- Backend is Go (1.25+) using Gin, located in `backend/`.
+- Backend is Go (1.25+) using Gin, located in `backend/`. Docker config is in `backend/docker/`.
+- Garmin watch app is Monkey C, located in `garmin/`. Uses Connect IQ SDK 9.x.
 - Run tests with `go test ./...` from the `backend/` directory.
 - Do not commit `.env` files or secrets. Use `.env.example` for templates.
+- Do not commit `garmin/source/Config.mc` — use `Config.mc.example` as template.
+- API endpoint is `GET /departures` with query params `stop_ref`, `line_ref`, `direction`, `limit`.
+- JSON response envelope uses key `departures` (not `trains`).
 
 ## Code style
 - Follow standard Go conventions: `gofumpt`, short variable names, error handling with early returns.

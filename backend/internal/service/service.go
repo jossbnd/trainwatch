@@ -14,10 +14,10 @@ type Input struct {
 }
 
 type Service interface {
-	// GetNextTrains returns upcoming trains for the given stop, line and
+	// GetDepartures returns upcoming departures for the given stop, line and
 	// direction. If direction is empty, returns all directions. At most limit
 	// results are returned (0 means use default of 5).
-	GetNextTrains(ctx context.Context, stop, line, direction string, limit int) ([]model.NextTrain, error)
+	GetDepartures(ctx context.Context, stop, line, direction string, limit int) ([]model.Departure, error)
 }
 
 type service struct {

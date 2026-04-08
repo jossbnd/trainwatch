@@ -1,0 +1,6 @@
+module Config {
+    const API_URL = "http://YOUR_HOST/departures";
+    const API_KEY = "YOUR_API_KEY";
+    const STOP_REF = "YOUR_STOP_REF";
+    const LINE_REF = "YOUR_LINE_REF";
+}

@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Garmin App",
+      "request": "launch",
+      "type": "monkeyc",
+      "device": "fr265",
+      "jungleFiles": "${workspaceFolder}/garmin/monkey.jungle",
+      "developerKeyPath": "${workspaceFolder}/garmin/developer_key"
+    }
+  ]
+}
