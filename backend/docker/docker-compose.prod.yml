@@ -1,0 +1,26 @@
+services:
+  trainwatch-backend:
+    image: ghcr.io/jossbnd/trainwatch-backend:latest
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3025/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  traefik:
+    image: traefik:v3.2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./traefik.prod.yml:/etc/traefik/traefik.yml:ro
+      - ./services.prod.yml:/etc/traefik/services.prod.yml:ro
+      - acme:/acme
+
+volumes:
+  acme:

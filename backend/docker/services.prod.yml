@@ -1,10 +1,11 @@
 http:
   routers:
     trainwatch:
-      rule: "Host(`api.localhost`)"
+      rule: "Host(`api.trainwatch.app`)"
       entryPoints:
         - websecure
-      tls: {}
+      tls:
+        certResolver: letsencrypt
       service: trainwatch
 
   services:
@@ -12,8 +13,3 @@ http:
       loadBalancer:
         servers:
           - url: "http://trainwatch-backend:3025"
-
-tls:
-  certificates:
-    - certFile: /etc/traefik/certs/cert.pem
-      keyFile: /etc/traefik/certs/key.pem

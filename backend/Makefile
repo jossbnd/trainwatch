@@ -11,10 +11,10 @@ test:
 	go test ./...
 
 up:
-	docker compose up -d traefik && docker compose up trainwatch-backend
+	docker compose -f docker/docker-compose.yml up -d traefik && docker compose -f docker/docker-compose.yml up trainwatch-backend
 
 reup:
-	docker compose up -d traefik && docker compose up --force-recreate --build trainwatch-backend
+	docker compose -f docker/docker-compose.yml up -d traefik && docker compose -f docker/docker-compose.yml up --force-recreate --build trainwatch-backend
 
 deps:
 	go mod tidy
