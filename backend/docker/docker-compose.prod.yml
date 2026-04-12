@@ -1,3 +1,5 @@
+name: trainwatch
+
 services:
   trainwatch-backend:
     image: ghcr.io/jossbnd/trainwatch-backend:latest

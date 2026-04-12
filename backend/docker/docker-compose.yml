@@ -1,3 +1,5 @@
+name: trainwatch
+
 services:
   trainwatch-backend:
     build:
