@@ -1,0 +1,27 @@
+name: trainwatch
+
+services:
+  trainwatch-backend:
+    build:
+      context: ../
+      target: dev
+    volumes:
+      - ../:/app
+    env_file:
+      - ../.env
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3025/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  traefik:
+    image: traefik:v3.2
+    ports:
+      - "443:443"
+      - "8081:8080"
+    volumes:
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./services.yml:/etc/traefik/services.yml:ro
+      - ./certs:/etc/traefik/certs:ro
