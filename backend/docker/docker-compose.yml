@@ -1,7 +1,7 @@
 name: trainwatch
 
 services:
-  trainwatch-backend:
+  backend:
     build:
       context: ../
       target: dev

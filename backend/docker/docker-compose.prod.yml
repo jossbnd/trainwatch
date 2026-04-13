@@ -1,7 +1,7 @@
 name: trainwatch
 
 services:
-  trainwatch-backend:
+  backend:
     image: ghcr.io/jossbnd/trainwatch-backend:latest
     restart: unless-stopped
     env_file:
