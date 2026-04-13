@@ -5,7 +5,7 @@
       "name": "Run Garmin App",
       "request": "launch",
       "type": "monkeyc",
-      "device": "fr265",
+      "device": "fr165",
       "jungleFiles": "${workspaceFolder}/garmin/monkey.jungle",
       "developerKeyPath": "${workspaceFolder}/garmin/developer_key"
     }
