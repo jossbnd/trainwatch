@@ -6,7 +6,6 @@ desktop.ini
 
 # Environment
 .env
-.env.*
 
 # Binaries
 /bin/

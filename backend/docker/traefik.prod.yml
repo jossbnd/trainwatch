@@ -13,10 +13,9 @@ entryPoints:
 certificatesResolvers:
   letsencrypt:
     acme:
-      email: josselin.bonnaud@gmail.com
+      email: trainwatch.contact@gmail.com
       storage: /acme/acme.json
-      httpChallenge:
-        entryPoint: web
+      tlsChallenge: {}
 
 providers:
   file:
