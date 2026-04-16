@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -25,6 +26,11 @@ func (s *service) GetDepartures(ctx context.Context, stop, line, direction strin
 
 	visits, err := s.primClient.FetchStopVisits(ctx, stop, line)
 	if err != nil {
+		var respErr *prim.ResponseError
+		if errors.As(err, &respErr) && respErr.IsClientError() {
+			s.log.Warnc(ctx, fmt.Sprintf("service: invalid request stop=%s line=%s", stop, line), "error", err)
+			return nil, fmt.Errorf("%w: %s", ErrInvalidRequest, err)
+		}
 		s.log.Errorc(ctx, fmt.Sprintf("service: failed to fetch stop visits stop=%s line=%s", stop, line), "error", err)
 		return nil, err
 	}

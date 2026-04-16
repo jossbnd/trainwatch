@@ -23,6 +23,20 @@ type Timing struct {
 	ArrivalStatus         string     `json:"ArrivalStatus,omitempty"`
 }
 
+// ResponseError represents a non-2xx response from the PRIM API.
+type ResponseError struct {
+	StatusCode int
+	Body       string
+}
+
+func (e *ResponseError) Error() string {
+	return fmt.Sprintf("prim returned status %d: %s", e.StatusCode, e.Body)
+}
+
+func (e *ResponseError) IsClientError() bool {
+	return e.StatusCode >= 400 && e.StatusCode < 500
+}
+
 // StopVisit represents a train stopping at a station, as returned by the PRIM API.
 type StopVisit struct {
 	DirectionRef    TextValue   `json:"DirectionRef"`
@@ -91,7 +105,7 @@ func (c *client) FetchStopVisits(ctx context.Context, stopRef, lineRef string) (
 	// Check for non-2xx status codes
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		b, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("prim returned status %d: %s", resp.StatusCode, string(b))
+		return nil, &ResponseError{StatusCode: resp.StatusCode, Body: string(b)}
 	}
 
 	// Read response body

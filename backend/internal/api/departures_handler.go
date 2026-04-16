@@ -1,12 +1,14 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/jossbnd/trainwatch/backend/internal/middleware"
 	"github.com/jossbnd/trainwatch/backend/internal/model"
+	"github.com/jossbnd/trainwatch/backend/internal/service"
 )
 
 type departuresResponse struct {
@@ -32,6 +34,11 @@ func (h *handler) getDeparturesHandler(c *gin.Context) {
 
 	result, err := h.service.GetDepartures(ctx, q.StopRef, q.LineRef, q.Direction, q.Limit)
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidRequest) {
+			h.log.Warnc(ctx, "api: invalid request", "error", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid stop or line reference"})
+			return
+		}
 		h.log.Errorc(ctx, "api: service error", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error", "request_id": c.GetString(middleware.RequestIDKey)})
 		return

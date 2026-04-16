@@ -11,10 +11,15 @@ import (
 func RequestLogger(log *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
+		ctx := c.Request.Context()
+		log.Infoc(ctx, "handling request",
+			"method", c.Request.Method,
+			"path", c.Request.URL.Path,
+			"query", c.Request.URL.RawQuery,
+		)
 		c.Next()
 
 		status := c.Writer.Status()
-		ctx := c.Request.Context()
 		attrs := []any{
 			"method", c.Request.Method,
 			"path", c.Request.URL.Path,

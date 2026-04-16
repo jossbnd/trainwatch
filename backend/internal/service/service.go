@@ -2,11 +2,14 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jossbnd/trainwatch/backend/internal/logger"
 	"github.com/jossbnd/trainwatch/backend/internal/model"
 	"github.com/jossbnd/trainwatch/backend/internal/prim"
 )
+
+var ErrInvalidRequest = errors.New("invalid request")
 
 type Input struct {
 	Logger     *logger.Logger
