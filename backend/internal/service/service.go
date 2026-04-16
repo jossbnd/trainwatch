@@ -9,7 +9,7 @@ import (
 )
 
 type Input struct {
-	Logger     logger.Logger
+	Logger     *logger.Logger
 	PrimClient prim.Client
 }
 
@@ -21,7 +21,7 @@ type Service interface {
 }
 
 type service struct {
-	log        logger.Logger
+	log        *logger.Logger
 	primClient prim.Client
 }
 

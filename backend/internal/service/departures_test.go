@@ -3,11 +3,10 @@ package service
 import (
 	"context"
 	"errors"
-	"io"
-	"log/slog"
 	"testing"
 	"time"
 
+	"github.com/jossbnd/trainwatch/backend/internal/logger"
 	"github.com/jossbnd/trainwatch/backend/internal/prim"
 )
 
@@ -24,13 +23,9 @@ func (m *mockClient) FetchStopVisits(_ context.Context, _, _ string) ([]prim.Sto
 
 // --- helpers ---
 
-func discardLogger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(io.Discard, nil))
-}
-
 func newService(visits []prim.StopVisit, err error) Service {
 	return New(Input{
-		Logger:     discardLogger(),
+		Logger:     logger.NewDiscard(),
 		PrimClient: &mockClient{visits: visits, err: err},
 	})
 }

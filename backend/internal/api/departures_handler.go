@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/jossbnd/trainwatch/backend/internal/middleware"
 	"github.com/jossbnd/trainwatch/backend/internal/model"
 )
 
@@ -20,17 +21,19 @@ type Query struct {
 }
 
 func (h *handler) getDeparturesHandler(c *gin.Context) {
+	ctx := c.Request.Context()
+
 	var q Query
 	if err := c.ShouldBindQuery(&q); err != nil {
-		h.log.Error("api: invalid query parameters", "error", err)
+		h.log.Errorc(ctx, "api: invalid query parameters", "error", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := h.service.GetDepartures(c.Request.Context(), q.StopRef, q.LineRef, q.Direction, q.Limit)
+	result, err := h.service.GetDepartures(ctx, q.StopRef, q.LineRef, q.Direction, q.Limit)
 	if err != nil {
-		h.log.Error("api: service error", "error", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		h.log.Errorc(ctx, "api: service error", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error", "request_id": c.GetString(middleware.RequestIDKey)})
 		return
 	}
 

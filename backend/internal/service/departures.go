@@ -17,7 +17,7 @@ const defaultLimit = 5
 // direction. If direction is empty, returns all directions. At most limit
 // results are returned; if limit <= 0 the default of 5 is used.
 func (s *service) GetDepartures(ctx context.Context, stop, line, direction string, limit int) ([]model.Departure, error) {
-	s.log.Debug(fmt.Sprintf("GetDepartures called stop=%s line=%s direction=%s limit=%d", stop, line, direction, limit))
+	s.log.Debugc(ctx, fmt.Sprintf("GetDepartures called stop=%s line=%s direction=%s limit=%d", stop, line, direction, limit))
 
 	if limit <= 0 {
 		limit = defaultLimit
@@ -25,10 +25,10 @@ func (s *service) GetDepartures(ctx context.Context, stop, line, direction strin
 
 	visits, err := s.primClient.FetchStopVisits(ctx, stop, line)
 	if err != nil {
-		s.log.Error(fmt.Sprintf("service: failed to fetch stop visits stop=%s line=%s", stop, line), "error", err)
+		s.log.Errorc(ctx, fmt.Sprintf("service: failed to fetch stop visits stop=%s line=%s", stop, line), "error", err)
 		return nil, err
 	}
-	s.log.Debug(fmt.Sprintf("fetched visits count=%d stop=%s line=%s", len(visits), stop, line))
+	s.log.Debugc(ctx, fmt.Sprintf("fetched visits count=%d stop=%s line=%s", len(visits), stop, line))
 
 	now := time.Now()
 	var departures []model.Departure
@@ -71,7 +71,7 @@ func (s *service) GetDepartures(ctx context.Context, stop, line, direction strin
 		departures = departures[:limit]
 	}
 
-	s.log.Info(fmt.Sprintf("service: returning upcoming departures count=%d stop=%s line=%s direction=%s",
+	s.log.Infoc(ctx, fmt.Sprintf("service: returning upcoming departures count=%d stop=%s line=%s direction=%s",
 		len(departures), stop, line, direction,
 	))
 	return departures, nil

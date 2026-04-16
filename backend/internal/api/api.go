@@ -2,7 +2,6 @@ package api
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -12,19 +11,20 @@ import (
 )
 
 type Input struct {
-	Logger  logger.Logger
+	Logger  *logger.Logger
 	Service service.Service
 	APIKey  string
 }
 
 type handler struct {
-	log     logger.Logger
+	log     *logger.Logger
 	service service.Service
 }
 
 func New(input Input) *gin.Engine {
 	r := gin.New()
-	r.Use(requestLogger(input.Logger))
+	r.Use(middleware.RequestID())
+	r.Use(middleware.RequestLogger(input.Logger))
 	r.Use(gin.Recovery())
 
 	h := &handler{
@@ -42,17 +42,4 @@ func New(input Input) *gin.Engine {
 
 func healthHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-}
-
-func requestLogger(log logger.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		start := time.Now()
-		c.Next()
-		log.Info("request",
-			"method", c.Request.Method,
-			"path", c.Request.URL.Path,
-			"status", c.Writer.Status(),
-			"latency_ms", time.Since(start).Milliseconds(),
-		)
-	}
 }
