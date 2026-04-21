@@ -34,22 +34,14 @@ func LoadFrom(path string) (Config, error) {
 		return Config{}, fmt.Errorf("read config file: %w", err)
 	}
 
-	var cfg Config
+	cfg := Config{
+		Env:      "dev",
+		Port:     "8080",
+		LogLevel: "info",
+		GinMode:  "debug",
+	}
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		return Config{}, fmt.Errorf("parse config file: %w", err)
-	}
-
-	if cfg.Env == "" {
-		cfg.Env = "dev"
-	}
-	if cfg.Port == "" {
-		cfg.Port = "8080"
-	}
-	if cfg.LogLevel == "" {
-		cfg.LogLevel = "info"
-	}
-	if cfg.GinMode == "" {
-		cfg.GinMode = "debug"
 	}
 
 	if cfg.Prim.BaseURL == "" {
