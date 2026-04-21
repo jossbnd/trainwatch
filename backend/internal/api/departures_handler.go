@@ -35,11 +35,11 @@ func (h *handler) getDeparturesHandler(c *gin.Context) {
 	result, err := h.service.GetDepartures(ctx, q.StopRef, q.LineRef, q.Direction, q.Limit)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidRequest) {
-			h.log.Warnc(ctx, "api: invalid request", "error", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid stop or line reference"})
 			return
 		}
 		h.log.Errorc(ctx, "api: service error", "error", err)
+		_ = c.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error", "request_id": c.GetString(middleware.RequestIDKey)})
 		return
 	}

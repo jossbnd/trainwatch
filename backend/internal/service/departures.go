@@ -10,6 +10,7 @@ import (
 
 	"github.com/jossbnd/trainwatch/backend/internal/model"
 	"github.com/jossbnd/trainwatch/backend/internal/prim"
+	"github.com/jossbnd/trainwatch/backend/internal/sentry"
 )
 
 const defaultLimit = 5
@@ -24,17 +25,23 @@ func (s *service) GetDepartures(ctx context.Context, stop, line, direction strin
 		limit = defaultLimit
 	}
 
-	visits, err := s.primClient.FetchStopVisits(ctx, stop, line)
+	visits, credits, err := s.primClient.FetchStopVisits(ctx, stop, line)
 	if err != nil {
 		var respErr *prim.ResponseError
 		if errors.As(err, &respErr) && respErr.IsClientError() {
-			s.log.Warnc(ctx, fmt.Sprintf("service: invalid request stop=%s line=%s", stop, line), "error", err)
+			s.log.Warnc(ctx, fmt.Sprintf("service: prim rejected request with status %d: %s", respErr.StatusCode, respErr.Body),
+				"stop", stop,
+				"line", line,
+			)
 			return nil, fmt.Errorf("%w: %s", ErrInvalidRequest, err)
 		}
-		s.log.Errorc(ctx, fmt.Sprintf("service: failed to fetch stop visits stop=%s line=%s", stop, line), "error", err)
+		s.log.Errorc(ctx, fmt.Sprintf("service: prim request failed stop=%s line=%s: %s", stop, line, err))
 		return nil, err
 	}
-	s.log.Debugc(ctx, fmt.Sprintf("fetched visits count=%d stop=%s line=%s", len(visits), stop, line))
+	if credits >= 0 {
+		sentry.SendGauge(ctx, sentry.MetricPrimCreditsRemainingDay, float64(credits))
+	}
+	s.log.Debugc(ctx, fmt.Sprintf("fetched visits count=%d stop=%s line=%s credits=%d", len(visits), stop, line, credits))
 
 	now := time.Now()
 	var departures []model.Departure

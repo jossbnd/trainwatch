@@ -11,7 +11,7 @@ http:
     trainwatch:
       loadBalancer:
         servers:
-          - url: "http://trainwatch-backend:3025"
+          - url: "http://backend:3025"
 
 tls:
   certificates:

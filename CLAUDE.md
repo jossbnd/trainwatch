@@ -10,12 +10,18 @@
 
 ## Language & project
 - Backend is Go (1.25+) using Gin, located in `backend/`. Docker config is in `backend/docker/`.
-- Garmin watch app is Monkey C, located in `garmin/`. Uses Connect IQ SDK 9.x.
+- Garmin watch app is Monkey C, located in `garmin/`. Uses Connect IQ SDK 9.x. Target device: **FR165**.
 - Run tests with `go test ./...` from the `backend/` directory.
 - Do not commit `.env` files or secrets. Use `.env.example` for templates.
 - Do not commit `garmin/source/Config.mc` — use `Config.mc.example` as template.
 - API endpoint is `GET /departures` with query params `stop_ref`, `line_ref`, `direction`, `limit`.
 - JSON response envelope uses key `departures` (not `trains`).
+
+## Observability (Sentry)
+- `internal/sentry` is the **single point of contact** with the `sentry-go` SDK. Never import `github.com/getsentry/sentry-go` or `sentry-go/gin` outside of this package.
+- Sentry is activated when `SENTRY_DSN` is non-empty. There is no separate `SENTRY_ENABLED` flag.
+- Sentry must be initialized **before** the logger so that startup logs are forwarded.
+- HTTP 500s are captured in `middleware.SentryCapture()`. Call `c.Error(err)` in handlers to attach the real error; a synthetic fallback is used otherwise.
 
 ## Code style
 - Follow standard Go conventions: `gofumpt`, short variable names, error handling with early returns.

@@ -8,13 +8,16 @@ import (
 )
 
 type Config struct {
-	Env         string
-	Port        string
-	LogLevel    string
-	GinMode     string
-	PrimBaseURL string
-	PrimAPIKey  string
-	APIKey      string
+	Env              string
+	Port             string
+	LogLevel         string
+	GinMode          string
+	PrimBaseURL      string
+	PrimAPIKey       string
+	APIKey           string
+	SentryEnabled    bool
+	SentryDSN        string
+	SentryEnableLogs bool
 }
 
 // Load loads and validates the configuration.
@@ -37,13 +40,16 @@ func Load() (Config, error) {
 	}
 
 	cfg := Config{
-		Env:         getEnv("ENV", "dev"),
-		Port:        getEnv("PORT", "8080"),
-		LogLevel:    getEnv("LOG_LEVEL", "info"),
-		GinMode:     getEnv("GIN_MODE", "debug"),
-		PrimBaseURL: primBase,
-		PrimAPIKey:  primKey,
-		APIKey:      apiKey,
+		Env:              getEnv("ENV", "dev"),
+		Port:             getEnv("PORT", "8080"),
+		LogLevel:         getEnv("LOG_LEVEL", "info"),
+		GinMode:          getEnv("GIN_MODE", "debug"),
+		PrimBaseURL:      primBase,
+		PrimAPIKey:       primKey,
+		APIKey:           apiKey,
+		SentryEnabled:    getEnv("SENTRY_ENABLED", "false") == "true",
+		SentryDSN:        getEnv("SENTRY_DSN", ""),
+		SentryEnableLogs: getEnv("SENTRY_ENABLE_LOGS", "false") == "true",
 	}
 	return cfg, nil
 }
