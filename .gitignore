@@ -5,6 +5,7 @@ ehthumbs.db
 desktop.ini
 
 # Environment
+.env
 backend/config.yaml
 
 # Binaries
