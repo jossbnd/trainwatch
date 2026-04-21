@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	_ "github.com/goccy/go-yaml"
 	"github.com/joho/godotenv"
 )
 
