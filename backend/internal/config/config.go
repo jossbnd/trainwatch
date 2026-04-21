@@ -18,6 +18,7 @@ type Config struct {
 		APIKey  string `yaml:"api_key"`
 	} `yaml:"prim"`
 	Sentry struct {
+		Enabled    bool   `yaml:"enabled"`
 		DSN        string `yaml:"dsn"`
 		EnableLogs bool   `yaml:"enable_logs"`
 	} `yaml:"sentry"`
