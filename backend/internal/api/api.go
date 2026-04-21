@@ -7,6 +7,7 @@ import (
 
 	"github.com/jossbnd/trainwatch/backend/internal/logger"
 	"github.com/jossbnd/trainwatch/backend/internal/middleware"
+	"github.com/jossbnd/trainwatch/backend/internal/sentry"
 	"github.com/jossbnd/trainwatch/backend/internal/service"
 )
 
@@ -24,7 +25,9 @@ type handler struct {
 func New(input Input) *gin.Engine {
 	r := gin.New()
 	r.Use(middleware.RequestID())
+	r.Use(sentry.GinMiddleware())
 	r.Use(middleware.RequestLogger(input.Logger))
+	r.Use(middleware.SentryCapture())
 	r.Use(gin.Recovery())
 
 	h := &handler{

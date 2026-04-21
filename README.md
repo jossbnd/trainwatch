@@ -33,7 +33,7 @@ cd ../../..
 
 # 2. Configure environment
 cp backend/.env.example backend/.env
-# Edit backend/.env and fill in PRIM_API_KEY and API_KEY
+# Edit backend/.env and fill in PRIM_API_KEY, API_KEY
 
 # 3. Start
 cd backend && make up
@@ -61,10 +61,11 @@ backend/
 └── internal/
     ├── api/             # HTTP handlers
     ├── config/          # config loading
-    ├── logger/          # logger abstraction
-    ├── middleware/       # Gin middlewares
+    ├── logger/          # slog-based logger with Sentry forwarding
+    ├── middleware/       # Gin middlewares (auth, request ID, logging, Sentry capture)
     ├── model/           # data structs
     ├── prim/            # PRIM HTTP client
+    ├── sentry/          # single wrapper around the sentry-go SDK
     └── service/         # business logic
 ```
 
@@ -122,7 +123,7 @@ curl "https://api.localhost/departures?stop_ref=STIF%3AStopArea%3ASP%3A43198%3A&
 
 ## Garmin app
 
-Watch app for the Garmin FR265/FR265S displaying next departures.
+Watch app for the Garmin FR165 displaying next departures.
 
 ### Prerequisites
 
@@ -145,8 +146,21 @@ Watch app for the Garmin FR265/FR265S displaying next departures.
 # 2. Configure the app
 cp garmin/source/Config.mc.example garmin/source/Config.mc
 # Edit Config.mc and fill in API_URL, API_KEY, STOP_REF, LINE_REF
+
+# 3. Configure the SDK path
+cp garmin/.env.example garmin/.env
+# Edit garmin/.env and set CIQ_SDK_DIR if your SDK is not in the default location
 ```
 
 Open the workspace in VS Code — the `.vscode/settings.json` and `launch.json` are already configured.
 
 Press `F5` to build and run in the simulator.
+
+### Build for device
+
+```bash
+cd garmin
+make build   # produces bin/trainwatch.prg, ready to sideload onto the FR165
+```
+
+Copy `bin/trainwatch.prg` to the `GARMIN/APPS/` folder of the watch when mounted as USB mass storage.

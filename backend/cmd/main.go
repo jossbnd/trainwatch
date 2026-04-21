@@ -15,6 +15,7 @@ import (
 	"github.com/jossbnd/trainwatch/backend/internal/config"
 	"github.com/jossbnd/trainwatch/backend/internal/logger"
 	"github.com/jossbnd/trainwatch/backend/internal/prim"
+	"github.com/jossbnd/trainwatch/backend/internal/sentry"
 	"github.com/jossbnd/trainwatch/backend/internal/service"
 )
 
@@ -26,9 +27,22 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Initialize Sentry before the logger so log entries are forwarded from startup.
+	if cfg.SentryDSN != "" {
+		flush, err := sentry.Init(sentry.Input{
+			DSN:         cfg.SentryDSN,
+			Environment: cfg.Env,
+			EnableLogs:  cfg.SentryEnableLogs,
+		})
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "sentry init failed: %v\n", err)
+		}
+		defer flush(2 * time.Second)
+	}
+
 	// Set logger
-	log := logger.New(logger.Input{Level: cfg.LogLevel})
-	log.Info(fmt.Sprintf("logger initialized with level=%s", cfg.LogLevel))
+	log := logger.New(logger.Input{Level: cfg.LogLevel, EnableSentry: cfg.SentryDSN != ""})
+	log.Info(fmt.Sprintf("logger initialized with level=%s sentry=%t", cfg.LogLevel, cfg.SentryDSN != ""))
 
 	// Set gin mode from config
 	gin.SetMode(cfg.GinMode)
@@ -60,7 +74,7 @@ func main() {
 
 	// Start server in background goroutine.
 	go func() {
-		log.Info(fmt.Sprintf("starting server on %s", addr))
+		log.Info(fmt.Sprintf("application is running on %s", addr))
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Error("server exited with error", "error", err)
 			os.Exit(1)

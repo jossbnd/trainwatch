@@ -17,8 +17,8 @@ type mockClient struct {
 	err    error
 }
 
-func (m *mockClient) FetchStopVisits(_ context.Context, _, _ string) ([]prim.StopVisit, error) {
-	return m.visits, m.err
+func (m *mockClient) FetchStopVisits(_ context.Context, _, _ string) ([]prim.StopVisit, int, error) {
+	return m.visits, -1, m.err
 }
 
 // --- helpers ---

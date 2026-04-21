@@ -13,11 +13,25 @@ type Logger struct {
 }
 
 type Input struct {
-	Level string
+	Level         string
+	EnableSentry  bool
 }
 
-// Context key for request ID enrichment.
+// Context keys for request enrichment.
 type requestIDKey struct{}
+type requestAttrsKey struct{}
+
+type RequestAttrs struct {
+	Method    string
+	Path      string
+	Query     string
+	ClientIP  string
+	UserAgent string
+}
+
+func ContextWithRequestAttrs(ctx context.Context, attrs RequestAttrs) context.Context {
+	return context.WithValue(ctx, requestAttrsKey{}, attrs)
+}
 
 func ContextWithRequestID(ctx context.Context, id string) context.Context {
 	return context.WithValue(ctx, requestIDKey{}, id)
@@ -62,6 +76,15 @@ func (h *contextHandler) Handle(ctx context.Context, r slog.Record) error {
 	if id, ok := ctx.Value(requestIDKey{}).(string); ok && id != "" {
 		r.AddAttrs(slog.String("request_id", id))
 	}
+	if a, ok := ctx.Value(requestAttrsKey{}).(RequestAttrs); ok {
+		r.AddAttrs(
+			slog.String("method", a.Method),
+			slog.String("path", a.Path),
+			slog.String("query", a.Query),
+			slog.String("client_ip", a.ClientIP),
+			slog.String("user_agent", a.UserAgent),
+		)
+	}
 	return h.inner.Handle(ctx, r)
 }
 
@@ -92,7 +115,11 @@ func New(input Input) *Logger {
 	jsonHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: mapLogLevel(input.Level),
 	})
-	return &Logger{l: slog.New(&contextHandler{inner: jsonHandler})}
+	var inner slog.Handler = jsonHandler
+	if input.EnableSentry {
+		inner = &sentryHandler{inner: jsonHandler}
+	}
+	return &Logger{l: slog.New(&contextHandler{inner: inner})}
 }
 
 func NewDiscard() *Logger {
