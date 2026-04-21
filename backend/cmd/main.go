@@ -28,7 +28,7 @@ func main() {
 	}
 
 	// Initialize Sentry before the logger so log entries are forwarded from startup.
-	if cfg.Sentry.DSN != "" {
+	if cfg.Sentry.Enabled {
 		flush, err := sentry.Init(sentry.Input{
 			DSN:         cfg.Sentry.DSN,
 			Environment: cfg.Env,
@@ -41,8 +41,8 @@ func main() {
 	}
 
 	// Set logger
-	log := logger.New(logger.Input{Level: cfg.LogLevel, EnableSentry: cfg.Sentry.DSN != ""})
-	log.Info(fmt.Sprintf("logger initialized with level=%s sentry=%t", cfg.LogLevel, cfg.Sentry.DSN != ""))
+	log := logger.New(logger.Input{Level: cfg.LogLevel, EnableSentry: cfg.Sentry.Enabled})
+	log.Info(fmt.Sprintf("logger initialized with level=%s sentry=%t", cfg.LogLevel, cfg.Sentry.Enabled))
 
 	// Set gin mode from config
 	gin.SetMode(cfg.GinMode)
