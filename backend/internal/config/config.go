@@ -4,70 +4,62 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/goccy/go-yaml"
-	"github.com/joho/godotenv"
+	"github.com/goccy/go-yaml"
 )
 
 type Config struct {
-	Env              string
-	Port             string
-	LogLevel         string
-	GinMode          string
-	PrimBaseURL      string
-	PrimAPIKey       string
-	APIKey           string
-	SentryEnabled    bool
-	SentryDSN        string
-	SentryEnableLogs bool
+	Env      string `yaml:"env"`
+	Port     string `yaml:"port"`
+	LogLevel string `yaml:"log_level"`
+	GinMode  string `yaml:"gin_mode"`
+	APIKey   string `yaml:"api_key"`
+	Prim     struct {
+		BaseURL string `yaml:"base_url"`
+		APIKey  string `yaml:"api_key"`
+	} `yaml:"prim"`
+	Sentry struct {
+		DSN        string `yaml:"dsn"`
+		EnableLogs bool   `yaml:"enable_logs"`
+	} `yaml:"sentry"`
 }
 
-// Load loads and validates the configuration.
-// Returns an error when a required environment variable is missing.
 func Load() (Config, error) {
-	// Load .env from working directory if present
-	_ = godotenv.Load()
+	return LoadFrom("config.yaml")
+}
 
-	primBase, err := requireEnv("PRIM_BASE_URL")
+func LoadFrom(path string) (Config, error) {
+	data, err := os.ReadFile(path)
 	if err != nil {
-		return Config{}, err
-	}
-	primKey, err := requireEnv("PRIM_API_KEY")
-	if err != nil {
-		return Config{}, err
-	}
-	apiKey, err := requireEnv("API_KEY")
-	if err != nil {
-		return Config{}, err
+		return Config{}, fmt.Errorf("read config file: %w", err)
 	}
 
-	cfg := Config{
-		Env:              getEnv("ENV", "dev"),
-		Port:             getEnv("PORT", "8080"),
-		LogLevel:         getEnv("LOG_LEVEL", "info"),
-		GinMode:          getEnv("GIN_MODE", "debug"),
-		PrimBaseURL:      primBase,
-		PrimAPIKey:       primKey,
-		APIKey:           apiKey,
-		SentryEnabled:    getEnv("SENTRY_ENABLED", "false") == "true",
-		SentryDSN:        getEnv("SENTRY_DSN", ""),
-		SentryEnableLogs: getEnv("SENTRY_ENABLE_LOGS", "false") == "true",
+	var cfg Config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return Config{}, fmt.Errorf("parse config file: %w", err)
 	}
+
+	if cfg.Env == "" {
+		cfg.Env = "dev"
+	}
+	if cfg.Port == "" {
+		cfg.Port = "8080"
+	}
+	if cfg.LogLevel == "" {
+		cfg.LogLevel = "info"
+	}
+	if cfg.GinMode == "" {
+		cfg.GinMode = "debug"
+	}
+
+	if cfg.Prim.BaseURL == "" {
+		return Config{}, fmt.Errorf("missing required config key: prim.base_url")
+	}
+	if cfg.Prim.APIKey == "" {
+		return Config{}, fmt.Errorf("missing required config key: prim.api_key")
+	}
+	if cfg.APIKey == "" {
+		return Config{}, fmt.Errorf("missing required config key: api_key")
+	}
+
 	return cfg, nil
-}
-
-// getEnv returns the value of the environment variable or a default
-func getEnv(key, defaultVal string) string {
-	if val := os.Getenv(key); val != "" {
-		return val
-	}
-	return defaultVal
-}
-
-// requireEnv returns the value of the environment variable or an error if missing
-func requireEnv(key string) (string, error) {
-	val := os.Getenv(key)
-	if val == "" {
-		return "", fmt.Errorf("missing required env variable: %s", key)
-	}
-	return val, nil
 }
