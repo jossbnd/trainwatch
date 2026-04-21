@@ -15,6 +15,7 @@ type Config struct {
 	PrimBaseURL      string
 	PrimAPIKey       string
 	APIKey           string
+	SentryEnabled    bool
 	SentryDSN        string
 	SentryEnableLogs bool
 }
@@ -46,6 +47,7 @@ func Load() (Config, error) {
 		PrimBaseURL:      primBase,
 		PrimAPIKey:       primKey,
 		APIKey:           apiKey,
+		SentryEnabled:    getEnv("SENTRY_ENABLED", "false") == "true",
 		SentryDSN:        getEnv("SENTRY_DSN", ""),
 		SentryEnableLogs: getEnv("SENTRY_ENABLE_LOGS", "false") == "true",
 	}

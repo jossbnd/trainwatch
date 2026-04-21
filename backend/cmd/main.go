@@ -41,8 +41,8 @@ func main() {
 	}
 
 	// Set logger
-	log := logger.New(logger.Input{Level: cfg.LogLevel, EnableSentry: cfg.SentryDSN != ""})
-	log.Info(fmt.Sprintf("logger initialized with level=%s sentry=%t", cfg.LogLevel, cfg.SentryDSN != ""))
+	log := logger.New(logger.Input{Level: cfg.LogLevel, EnableSentry: cfg.SentryEnabled})
+	log.Info(fmt.Sprintf("logger initialized with level=%s sentry=%t", cfg.LogLevel, cfg.SentryEnabled))
 
 	// Set gin mode from config
 	gin.SetMode(cfg.GinMode)
