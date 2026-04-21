@@ -13,13 +13,15 @@ type Logger struct {
 }
 
 type Input struct {
-	Level         string
-	EnableSentry  bool
+	Level        string
+	EnableSentry bool
 }
 
 // Context keys for request enrichment.
-type requestIDKey struct{}
-type requestAttrsKey struct{}
+type (
+	requestIDKey    struct{}
+	requestAttrsKey struct{}
+)
 
 type RequestAttrs struct {
 	Method    string

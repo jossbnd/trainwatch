@@ -39,7 +39,7 @@ func (h *handler) getDeparturesHandler(c *gin.Context) {
 			return
 		}
 		h.log.Errorc(ctx, "api: service error", "error", err)
-		c.Error(err)
+		_ = c.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error", "request_id": c.GetString(middleware.RequestIDKey)})
 		return
 	}
