@@ -1,0 +1,15 @@
+env: dev
+port: 3025
+log_level: info
+gin_mode: debug
+
+prim:
+  base_url: https://prim.iledefrance-mobilites.fr
+  api_key: your_prim_api_key_here
+
+api_key: your_api_key_here
+
+sentry:
+  enabled: false
+  dsn: ""
+  enable_logs: false
