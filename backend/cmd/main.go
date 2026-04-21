@@ -28,11 +28,11 @@ func main() {
 	}
 
 	// Initialize Sentry before the logger so log entries are forwarded from startup.
-	if cfg.SentryDSN != "" {
+	if cfg.Sentry.Enabled {
 		flush, err := sentry.Init(sentry.Input{
-			DSN:         cfg.SentryDSN,
+			DSN:         cfg.Sentry.DSN,
 			Environment: cfg.Env,
-			EnableLogs:  cfg.SentryEnableLogs,
+			EnableLogs:  cfg.Sentry.EnableLogs,
 		})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "sentry init failed: %v\n", err)
@@ -41,19 +41,19 @@ func main() {
 	}
 
 	// Set logger
-	log := logger.New(logger.Input{Level: cfg.LogLevel, EnableSentry: cfg.SentryEnabled})
-	log.Info(fmt.Sprintf("logger initialized with level=%s sentry=%t", cfg.LogLevel, cfg.SentryEnabled))
+	log := logger.New(logger.Input{Level: cfg.LogLevel, EnableSentry: cfg.Sentry.Enabled})
+	log.Info(fmt.Sprintf("logger initialized with level=%s sentry=%t", cfg.LogLevel, cfg.Sentry.Enabled))
 
 	// Set gin mode from config
 	gin.SetMode(cfg.GinMode)
 
 	// Initialize prim client
-	primClient, err := prim.New(cfg.PrimBaseURL, cfg.PrimAPIKey)
+	primClient, err := prim.New(cfg.Prim.BaseURL, cfg.Prim.APIKey)
 	if err != nil {
 		log.Error("failed to initialize prim client", "error", err)
 		os.Exit(1)
 	}
-	log.Info(fmt.Sprintf("prim client initialized with baseURL=%s", cfg.PrimBaseURL))
+	log.Info(fmt.Sprintf("prim client initialized with baseURL=%s", cfg.Prim.BaseURL))
 
 	// Initialize service
 	svc := service.New(service.Input{

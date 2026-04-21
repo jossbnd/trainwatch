@@ -7,8 +7,7 @@ services:
       target: dev
     volumes:
       - ../:/app
-    env_file:
-      - ../.env
+      - ../config.yaml:/app/config.yaml:ro
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3025/health"]
       interval: 30s

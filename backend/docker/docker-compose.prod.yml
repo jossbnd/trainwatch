@@ -4,8 +4,8 @@ services:
   backend:
     image: ghcr.io/jossbnd/trainwatch-backend:latest
     restart: unless-stopped
-    env_file:
-      - ../.env
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3025/health"]
       interval: 30s
