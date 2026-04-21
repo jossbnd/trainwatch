@@ -14,6 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /trainwatch ./cmd/main.go
 
 FROM alpine:3.21 AS prod
 RUN apk add --no-cache ca-certificates
+WORKDIR /app
 COPY --from=builder /trainwatch /trainwatch
 EXPOSE 8080
 ENTRYPOINT ["/trainwatch"]
