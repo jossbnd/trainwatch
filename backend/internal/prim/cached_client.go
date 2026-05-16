@@ -7,8 +7,6 @@ import (
 	"github.com/jossbnd/trainwatch/backend/internal/cache"
 )
 
-const CacheTTL = 30 * time.Second
-
 type cachedEntry struct {
 	visits  []StopVisit
 	credits int
@@ -20,10 +18,10 @@ type cachedClient struct {
 	ttl   time.Duration
 }
 
-// NewCached wraps inner with a 30-second in-memory cache keyed by (stopRef, lineRef).
+// NewCached wraps inner with an in-memory cache keyed by (stopRef, lineRef).
 // Errors are never cached. On a cache hit, the last known credit count is returned.
-func NewCached(inner Client) Client {
-	return newCachedWithCache(inner, cache.New[cachedEntry](CacheTTL, 5*time.Minute), CacheTTL)
+func NewCached(inner Client, ttl time.Duration) Client {
+	return newCachedWithCache(inner, cache.New[cachedEntry](ttl, 5*time.Minute), ttl)
 }
 
 // newCachedWithCache allows injecting a custom cache and TTL in tests.

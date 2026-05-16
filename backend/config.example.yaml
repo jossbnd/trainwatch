@@ -6,6 +6,7 @@ gin_mode: debug
 prim:
   base_url: https://prim.iledefrance-mobilites.fr
   api_key: your_prim_api_key_here
+  cache_ttl: 30s
 
 api_key: your_api_key_here
 
