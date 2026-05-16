@@ -58,7 +58,7 @@ func main() {
 	// Initialize service
 	svc := service.New(service.Input{
 		Logger:     log,
-		PrimClient: primClient,
+		PrimClient: prim.NewCached(primClient),
 	})
 	log.Info("service initialized")
 
