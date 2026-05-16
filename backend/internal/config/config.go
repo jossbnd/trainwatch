@@ -14,7 +14,7 @@ type Config struct {
 	LogLevel string `yaml:"log_level"`
 	GinMode  string `yaml:"gin_mode"`
 	APIKey   string `yaml:"api_key"`
-	Prim struct {
+	Prim     struct {
 		BaseURL  string        `yaml:"base_url"`
 		APIKey   string        `yaml:"api_key"`
 		CacheTTL time.Duration `yaml:"cache_ttl"`

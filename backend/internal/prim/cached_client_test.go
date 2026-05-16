@@ -10,10 +10,10 @@ import (
 )
 
 type mockClient struct {
-	calls  int
-	visits []StopVisit
+	calls   int
+	visits  []StopVisit
 	credits int
-	err    error
+	err     error
 }
 
 func (m *mockClient) FetchStopVisits(_ context.Context, _, _ string) ([]StopVisit, int, error) {
