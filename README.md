@@ -128,6 +128,11 @@ Watch app for the Garmin FR165 displaying next departures.
 ### Prerequisites
 
 - [Garmin Connect IQ SDK](https://developer.garmin.com/connect-iq/sdk/) (9.x)
+- A Java runtime (JDK 8+) — required by the Monkey C compiler. On macOS:
+  ```bash
+  brew install openjdk
+  sudo ln -sfn /opt/homebrew/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+  ```
 - VS Code with the [Monkey C extension](https://marketplace.visualstudio.com/items?itemName=garmin.monkey-c)
 - A Garmin developer key (see below)
 
